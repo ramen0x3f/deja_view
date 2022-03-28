@@ -281,7 +281,7 @@ def run_viewgen(args):
 
 	# New option from @ramen0x3f
 	if args.decrypt:
-		viewstate, signature = viewgen.decrypt(args.payload)
+		viewstate = viewgen.decrypt(args.payload)[0].decode('ascii')
 		if viewstate is not None:
 			print(f"Decrypted ViewState (decode with Base64): {viewstate}")
 
