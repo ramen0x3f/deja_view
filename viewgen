@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from pprint import pprint
 from Crypto.Cipher import AES
 from Crypto.Cipher import DES
@@ -59,7 +58,11 @@ class ViewGen:
 	def decode(self, payload, parse=False):
 		if self.encrypted:
 			payload, signature = self.decrypt(payload)
-			vs = ViewState(payload)
+			try:
+				vs = ViewState(payload)
+			except:
+				print(f"[!] Invalid formatting. Decrypted ViewState printed below in Base64:\n{payload}")
+				return None, None
 		else:
 			vs = ViewState(payload)
 			try:
@@ -245,6 +248,7 @@ def parse_args():
 	parser.add_argument("-m", "--modifier", help="VIEWSTATEGENERATOR value", required=False, default="00000000")
 	parser.add_argument("-c", "--command", help="command to execute", required=False)
 	parser.add_argument("--decode", help="decode a ViewState payload", required=False, default=False, action="store_true")
+	parser.add_argument("--decrypt", help="print decrypted ViewState payload (don't try to decode)", required=False, default=False, action="store_true")
 	parser.add_argument("--guess", help="guess signature and encryption mode for a given payload", required=False, default=False, action="store_true")
 	parser.add_argument("--check", help="check if modifier and keys are correct for a given payload", required=False, default=False, action="store_true")
 	parser.add_argument("--vkey", help="validation key", required=False, default="")
@@ -274,6 +278,12 @@ def run_viewgen(args):
 			exit(1)
 
 	viewgen = ViewGen(binascii.unhexlify(args.vkey), args.valg, binascii.unhexlify(args.dkey), args.dalg, args.modifier, args.encrypted)
+
+	# New option from @ramen0x3f
+	if args.decrypt:
+		viewstate, signature = viewgen.decrypt(args.payload)
+		if viewstate is not None:
+			print(f"Decrypted ViewState (decode with Base64): {viewstate}")
 
 	if args.decode:
 		viewstate, signature = viewgen.decode(args.payload, parse=True)
