@@ -31,8 +31,10 @@ META["DESCRIPTION"] = """Simple wrapper to read in ViewStates from event logs an
 META["EXAMPLES"] = """python3 deja_view.py -h"""
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+from base64 import b64decode
 from binascii import unhexlify
 from csv import DictWriter
+from hashlib import md5
 from sys import stderr
 from viewgen import read_webconfig, ViewGen
 
@@ -44,7 +46,8 @@ def decrypt_all(args):
 		results.extend(get_events(args.logs))
 		for e in results:
 			e['Decrypted ViewState'] = viewgen.decrypt(e['ViewState'])[0].decode('ascii')
-
+			e['Payload File Hash'] = get_executable(e['Decrypted ViewState'])
+			
 	if args.payload:
 		results.append({
 			"Server Hostname": "N/A",
@@ -53,7 +56,8 @@ def decrypt_all(args):
 			"Source IP": "N/A",
 			"User-Agent": "N/A",
 			"ViewState": args.payload,
-			"Decrypted ViewState": viewgen.decrypt(args.payload).decode('ascii')
+			"Decrypted ViewState": viewgen.decrypt(args.payload).decode('ascii'),
+			"Payload File Hash": get_executable(viewgen.decrypt(args.payload).decode('ascii'))
 		})
 
 	return results
@@ -76,6 +80,20 @@ def get_events(log_path):
 
 	return events
 
+def get_executable(viewstate):
+	decoded = b64decode(viewstate)
+	offset = decoded.find(b'\x4d\x5a\x90')
+
+	if offset != -1:
+		exe = decoded[offset:]
+		exe_hash = md5(exe).hexdigest()
+		with open(exe_hash, "wb") as exe_out:
+			exe_out.write(exe)
+
+		return exe_hash
+	else:
+		return None
+
 def parse_arguments() -> ArgumentParser:
 	# Setting up argparser
 	parser = ArgumentParser(
@@ -90,7 +108,7 @@ def parse_arguments() -> ArgumentParser:
 	parser.add_argument("--valg", help="validation algorithm", required=False, default="")
 	parser.add_argument("--dkey", help="decryption key", required=False, default="")
 	parser.add_argument("--dalg", help="decryption algorithm", required=False, default="")
-	parser.add_argument("--logs", help="event logs with ViewState requests", required=False, default="")
+	parser.add_argument("--logs", help="line delimited file of 1316 / 4009 event logs with ViewState requests", required=False, default="")
 	parser.add_argument("-o", "--output", help="filename for TSV output", required=True)
 	parser.add_argument("-p", "--payload", help="ViewState payload (base 64 encoded)", required=False, nargs="?")
 	args = parser.parse_args()
@@ -120,7 +138,8 @@ if __name__ == "__main__":
 
 	# Stats 
 	success = len([x for x in decrypted if x['Decrypted ViewState'] is not None])
-	print(f"[+] Stats\n\tTotal ViewStates: {len(decrypted)}\n\tDecrypted ViewStates: {success}\n\tDecryption Errors: {len(decrypted)-success}")
+	exes = len([x for x in decrypted if x['Payload File Hash'] is not None])
+	print(f"[+] Stats\n\tTotal ViewStates: {len(decrypted)}\n\tDecrypted ViewStates: {success}\n\tDecryption Errors: {len(decrypted)-success}\n\tExecutables: {exes}")
 
 	# Output
 	with open(args.output, "w") as out:
