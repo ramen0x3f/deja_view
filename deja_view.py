@@ -1,18 +1,10 @@
-# Copyright (C) 2022 Alyssa Rahman, Mandiant, Inc. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Copyright (C) 2022 Alyssa Rahman
+# Licensed under the MIT License (the "License");
 #  you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at: [package root]/LICENSE.txt
 # Unless required by applicable law or agreed to in writing, software distributed under the License
 #  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
-
-# viewgen is under the MIT License
-# Licensed under the MIT License (the "MIT License");
-#  you may not use this file except in compliance with the MIT License.
-# You may obtain a copy of the MIT License at: [package root]/viewgen_LICENSE.txt
-# Unless required by applicable law or agreed to in writing, software distributed under the MIT License
-#  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the MIT License for the specific language governing permissions and limitations under the MIT License.
 
 META = {}
 META[
