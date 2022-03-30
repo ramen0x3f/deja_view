@@ -1,3 +1,59 @@
+# deja_view
+**Author:** Alyssa Rahman @ramen0x3f
+
+**Last Updated:** 2022-03-30
+
+## Description
+Viewgen is a fantastic tool that lets you generate, decrypt, and decode ViewState payloads. 
+
+I've created deja_view as a simple wrapper for viewgen, so analysts/responders can quickly decrypt and analyze ViewStates in bulk. 
+
+### Inputs
+deja_view requires at least one ViewState and valid machineKey values. There are a few options for how to provide these:
+
+**ViewStates**
+* Individually - you need the Persisted ViewState blob from event logs. This is going to be a Base64 encoded string. 
+* Bulk - create a file with event log entries/lines that begin with “1316 | Information | Event code: 4009-++-Viewstate verification failed.” deja_view will auto-extract relevant details including the ViewState from each line that matches this pattern. 
+
+**machineKey (uses viewgen functions)**
+* Manual definition of keys, algorithms, and modifier
+** Modifier is the ViewStateGenerator value. Try browsing the website and viewing source if you need to find this.
+* Automated extraction from a web.config file
+
+### Outputs
+**Basic Stats**
+* Number of ViewStates, successfully decrypted ViewStates, and extracted PEs
+
+**TSV report**
+* Decrypted ViewState
+* MD5 hash of any extracted PEs from the ViewStates
+* Additional metadata like client IP, user-agent, etc. if extracted from event log
+
+**Extracted PEs**
+* Filename is the MD5 hash listed in the TSV report
+
+## Usage
+
+### Setup
+Requirements/install same as viewgen: 
+```git clone https://github.com/ramen0x3f/viewgen.git
+cd viewgen
+pip3 install -r requirements.txt
+```
+
+### Decrypting ViewStates
+Decrypting a single ViewState:
+`python3 deja_view.py --modifier <viewstategenerator value> --vkey <validation key> --dkey <decryption key> --valg <validation algo> --dalg <decryption algo> -o <output filename for tsv results> --payload <encrypted viewstate>`
+
+Decrypting all ViewStates in list of events:
+`python3 deja_view.py --modifier <viewstategenerator value> --vkey <validation key> --dkey <decryption key> --valg <validation algo> --dalg <decryption algo> -o <output filename for tsv results> --logs <log file name>`
+ 
+### Understanding Results
+1. Analyze any extracted PEs
+2. Review decrypted ViewStates to identify gadget chains/methods used for execution. 
+** take the decrypted ViewState from the TSV (should start with /wE ) and Base64 decode it. 
+** Ysoserial .NET includes several known abusable gadgets
+
 # viewgen
 
 ### ASP.NET ViewState Generator
