@@ -36,7 +36,7 @@ deja_view requires at least one ViewState and valid machineKey values. There are
 
 ### Setup
 Requirements/install same as viewgen: 
-```git clone https://github.com/ramen0x3f/viewgen.git
+```git clone https://github.com/ramen0x3f/deja_view.git
 cd viewgen
 pip3 install -r requirements.txt
 ```
